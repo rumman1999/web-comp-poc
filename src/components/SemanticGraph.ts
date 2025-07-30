@@ -1,38 +1,39 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
-import { dummyData } from "../data/dummyData";
-import "../styles/graph.css";
 
 class SemanticGraph extends HTMLElement {
-  shadow: ShadowRoot;
+  private cy?: cytoscape.Core;
+  private container!: HTMLDivElement;
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
   }
 
   connectedCallback() {
-    const container = document.createElement("div");
-    container.classList.add("graph-container");
-    container.style.width = "100%";
-    container.style.height = "400px"; // or 100vh, etc
-    container.style.border = "1px solid #ccc";
-    container.style.position = "relative";
-    this.shadow.appendChild(container);
+    console.log("changes mde")
+    this.shadowRoot!.innerHTML = `
+      <style>
+        #cy {
+          width: 100%;
+          height: 400px;
+        }
+      </style>
+      <div id="cy"></div>
+    `;
 
-    const styleLink = document.createElement("link");
-    styleLink.setAttribute("rel", "stylesheet");
-    styleLink.setAttribute("href", "../styles/graph.css");
-    this.shadow.appendChild(styleLink);
+    this.container = this.shadowRoot!.getElementById("cy") as HTMLDivElement;
+  }
 
-    const elements: ElementDefinition[] = [
-      ...dummyData.nodes,
-      ...dummyData.edges,
-    ];
+  /**
+   * Public method to accept and render graph data
+   */
+  setGraphData(elements: ElementDefinition[]) {
+    if (!this.container) return;
 
-    cytoscape({
-      container,
+    this.cy = cytoscape({
+      container: this.container,
       elements,
-      layout: { name: "cose", animate: true },
+      layout: { name: "cose" },
       style: [
         {
           selector: "node",
@@ -45,8 +46,8 @@ class SemanticGraph extends HTMLElement {
             "min-width": "40px",
             padding: "10px",
             "border-width": 1,
-            "border-color": "#555",
-          },
+            "border-color": "#555"
+          }
         },
         {
           selector: "edge",
@@ -60,10 +61,10 @@ class SemanticGraph extends HTMLElement {
             "font-size": "10px",
             "text-background-color": "#fff",
             "text-background-opacity": 1,
-            "text-background-padding": "3px",
-          },
-        },
-      ],
+            "text-background-padding": "3px"
+          }
+        }
+      ]
     });
   }
 }
